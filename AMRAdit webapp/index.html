@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Menu Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Restaurant Menu Manager</h1>
+            <nav>
+                <button id="viewMenuBtn">View Menu</button>
+                <button id="manageMenuBtn">Manage Menu</button>
+            </nav>
+        </header>
+
+        <div id="menuView" class="content-section">
+            <!-- Public menu view will be displayed here -->
+            <div id="menuCategories"></div>
+        </div>
+
+        <div id="manageView" class="content-section" style="display:none;">
+            <h2>Manage Menu</h2>
+            <form id="addCategoryForm">
+                <input type="text" id="categoryName" placeholder="New Category Name" required>
+                <button type="submit">Add Category</button>
+            </form>
+
+            <form id="addItemForm">
+                <select id="itemCategory" required></select>
+                <input type="text" id="itemName" placeholder="Item Name" required>
+                <textarea id="itemDescription" placeholder="Description"></textarea>
+                <input type="number" id="itemPrice" placeholder="Price" step="0.01" required>
+                <input type="file" id="itemImage" accept="image/*">
+                <button type="submit">Add Item</button>
+            </form>
+
+            <div id="currentMenu">
+                <!-- Current menu items will be displayed here for management -->
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>

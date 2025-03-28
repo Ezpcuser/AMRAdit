@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Restaurant Menu Manager</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+
+    body {
+      background-color: #f7f7f7;
+      color: #333;
+      padding: 20px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    nav button {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav button:hover {
+      background-color: #555;
+    }
+
+    .day-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .day-button {
+      background-color: #666;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .day-button.active {
+      background-color: #007bff;
+    }
+
+    section {
+      display: none;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    .crud-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .crud-form input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      flex: 1 1 200px;
+    }
+
+    .crud-form button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .crud-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .crud-table th,
+    .crud-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .crud-table th {
+      background-color: #f2f2f2;
+    }
+
+    .crud-actions button {
+      margin-right: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+    }
+
+    .crud-actions .edit-btn {
+      background-color: #28a745;
+    }
+
+    .crud-actions .delete-btn {
+      background-color: #dc3545;
+    }
+
+    .export-button {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .save-button {
+      background-color: #ffc107;
+      margin-left: 10px;
+    }
+
+    #menuExportArea {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px;
+      background-color: #fff;
+      border-radius: 8px;
+      position: relative;
+      text-align: center;
+    }
+
+    #menuExportArea h1 {
+      font-family: 'Georgia', serif;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .restaurant-info {
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .category-block h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .menu-item .price {
+      font-weight: bold;
+    }
+
+    .menu-footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <button id="crudBtn">CRUD</button>
+    <button id="menuBtn">Vista Menú</button>
+  </nav>
+
+  <div class="day-selector" id="daySelector"></div>
+  <button id="saveBtn" class="export-button save-button">Guardar Cambios</button>
+
+  <section id="crudSection">
+    <h2>Administrar Menú</h2>
+    <div class="crud-form">
+      <input type="text" id="categoryInput" placeholder="Categoría">
+      <input type="text" id="nameInput" placeholder="Nombre del plato">
+      <input type="text" id="priceInput" placeholder="Precio (RD$)">
+      <button id="addBtn">Agregar</button>
+    </div>
+    <table class="crud-table" id="crudTable">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Plato</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="menuSection">
+    <button class="export-button" id="exportBtn">Exportar como Imagen</button>
+    <div id="menuExportArea">
+      <h1>RESTO CAFE</h1>
+      <div class="subtitle">Deliciosos platillos para cada momento</div>
+      <div class="restaurant-info">
+        <p>GUSTAVO MEJIA RICART #220 ENS QUISQUEYA</p>
+        <p>RNC: 132-101618</p>
+        <p>TEL: 809-472-7278</p>
+      </div>
+      <div class="menu-container" id="menuContainer"></div>
+      <div class="menu-footer">
+        OPEN DAILY 10 AM - 10 PM
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    let menuData = {
+      days: {
+        monday: { categories: [] },
+        tuesday: { categories: [] },
+        wednesday: { categories: [] },
+        thursday: { categories: [] },
+        friday: { categories: [] },
+        saturday: { categories: [] },
+        sunday: { categories: [] }
+      }
+    };
+    let currentDay = 'monday';
+    let editingId = null;
+
+    // DOM Elements
+    const elements = {
+      daySelector: document.getElementById('daySelector'),
+      crudSection: document.getElementById('crudSection'),
+      menuSection: document.getElementById('menuSection'),
+      crudBtn: document.getElementById('crudBtn'),
+      menuBtn: document.getElementById('menuBtn'),
+      categoryInput: document.getElementById('categoryInput'),
+      nameInput: document.getElementById('nameInput'),
+      priceInput: document.getElementById('priceInput'),
+      addBtn: document.getElementById('addBtn'),
+      crudTableBody: document.querySelector('#crudTable tbody'),
+      menuContainer: document.getElementById('menuContainer'),
+      saveBtn: document.getElementById('saveBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      menuExportArea: document.getElementById('menuExportArea')
+    };
+
+    // Event Listeners
+    elements.crudBtn.addEventListener('click', () => toggleView('crud'));
+    elements.menuBtn.addEventListener('click', () => toggleView('menu'));
+    elements.addBtn.addEventListener('click', handleAddEdit);
+    elements.saveBtn.addEventListener('click', saveData);
+    elements.exportBtn.addEventListener('click', exportAsImage);
+
+    // Initialization
+    loadInitialData();
+    initDaySelector();
+    renderTable();
+
+    async function loadInitialData() {
+      try {
+        const response = await fetch('menu.json');
+        const data = await response.json();
+        menuData = data;
+        renderTable();
+        renderMenuView();
+      } catch (error) {
+        console.log('Using default data structure');
+      }
+    }
+
+    function initDaySelector() {
+      elements.daySelector.innerHTML = Object.keys(menuData.days)
+        .map(day => `
+          <button class="day-button ${day === currentDay ? 'active' : ''}" 
+                  data-day="${day}">
+            ${day.toUpperCase()}
+          </button>
+        `).join('');
+      
+      document.querySelectorAll('.day-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentDay = btn.dataset.day;
+          document.querySelectorAll('.day-button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderTable();
+          renderMenuView();
+        });
+      });
+    }
+
+    function renderTable() {
+      elements.crudTableBody.innerHTML = '';
+      getCurrentDayData().categories.forEach(category => {
+        category.items.forEach(item => {
+          const row = `
+            <tr>
+              <td>${category.name}</td>
+              <td>${item.name}</td>
+              <td>RD$ ${item.price.toFixed(2)}</td>
+              <td class="crud-actions">
+                <button class="edit-btn" data-id="${item.id}">Editar</button>
+                <button class="delete-btn" data-id="${item.id}">Borrar</button>
+              </td>
+            </tr>
+          `;
+          elements.crudTableBody.insertAdjacentHTML('beforeend', row);
+        });
+      });
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => editItem(btn.dataset.id));
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteItem(btn.dataset.id));
+      });
+    }
+
+    function renderMenuView() {
+      elements.menuContainer.innerHTML = '';
+      getCurrentDayData().categories.forEach(category => {
+        const categoryHTML = `
+          <div class="category-block">
+            <h3>${category.name}</h3>
+            ${category.items.map(item => `
+              <div class="menu-item">
+                <span>${item.name}</span>
+                <span class="price">RD$ ${item.price.toFixed(2)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        elements.menuContainer.insertAdjacentHTML('beforeend', categoryHTML);
+      });
+    }
+
+    function handleAddEdit() {
+      const category = elements.categoryInput.value.trim();
+      const name = elements.nameInput.value.trim();
+      const price = parseFloat(elements.priceInput.value);
+
+      if (!category || !name || isNaN(price)) {
+        alert('Complete todos los campos correctamente');
+        return;
+      }
+
+      const currentData = getCurrentDayData();
+      let existingCategory = currentData.categories.find(c => c.name === category);
+
+      if (!existingCategory) {
+        existingCategory = { name: category, items: [] };
+        currentData.categories.push(existingCategory);
+      }
+
+      if (editingId) {
+        const item = existingCategory.items.find(i => i.id === editingId);
+        if (item) {
+          item.name = name;
+          item.price = price;
+        }
+        editingId = null;
+      } else {
+        existingCategory.items.push({
+          id: Date.now(),
+          name,
+          price
+        });
+      }
+
+      clearForm();
+      renderTable();
+      renderMenuView();
+    }
+
+    function editItem(id) {
+      const item = findItem(id);
+      if (item) {
+        elements.categoryInput.value = item.category;
+        elements.nameInput.value = item.name;
+        elements.priceInput.value = item.price;
+        editingId = id;
+      }
+    }
+
+    function deleteItem(id) {
+      const currentData = getCurrentDayData();
+      currentData.categories.forEach(category => {
+        category.items = category.items.filter(item => item.id !== parseInt(id));
+      });
+      renderTable();
+      renderMenuView();
+    }
+
+    function saveData() {
+      localStorage.setItem('menuData', JSON.stringify(menuData));
+      const dataStr = JSON.stringify(menuData, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'menu-data.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportAsImage() {
+      html2canvas(elements.menuExportArea).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `menu-${currentDay}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    function toggleView(view) {
+      elements.crudSection.classList.toggle('active', view === 'crud');
+      elements.menuSection.classList.toggle('active', view === 'menu');
+    }
+
+    function getCurrentDayData() {
+      return menuData.days[currentDay];
+    }
+
+    function findItem(id) {
+      for (const category of getCurrentDayData().categories) {
+        const item = category.items.find(i => i.id === parseInt(id));
+        if (item) return { ...item, category: category.name };
+      }
+      return null;
+    }
+
+    function clearForm() {
+      elements.categoryInput.value = '';
+      elements.nameInput.value = '';
+      elements.priceInput.value = '';
+    }
+  </script>
+</body>
+</html>

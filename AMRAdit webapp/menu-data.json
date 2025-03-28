@@ -1,0 +1,36 @@
+{
+  "days": {
+    "monday": {
+      "categories": []
+    },
+    "tuesday": {
+      "categories": [
+        {
+          "name": "a",
+          "items": [
+            {
+              "id": 1743129919424,
+              "name": "a",
+              "price": 20
+            }
+          ]
+        }
+      ]
+    },
+    "wednesday": {
+      "categories": []
+    },
+    "thursday": {
+      "categories": []
+    },
+    "friday": {
+      "categories": []
+    },
+    "saturday": {
+      "categories": []
+    },
+    "sunday": {
+      "categories": []
+    }
+  }
+}

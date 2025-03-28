@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>CRUD Menú de Restaurante</title>
+  <!-- Estilos -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+
+    body {
+      background-color: #f7f7f7;
+      color: #333;
+      padding: 20px;
+    }
+
+    /* Barra de navegación (para cambiar de vista) */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    nav button {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav button:hover {
+      background-color: #555;
+    }
+
+    /* Secciones */
+    section {
+      display: none;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    /* Sección CRUD */
+    #crudSection h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .crud-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .crud-form input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      flex: 1 1 200px;
+    }
+
+    .crud-form button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .crud-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .crud-table th,
+    .crud-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .crud-table th {
+      background-color: #f2f2f2;
+    }
+
+    .crud-actions {
+      white-space: nowrap;
+    }
+
+    .crud-actions button {
+      margin-right: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+    }
+
+    .crud-actions .edit-btn {
+      background-color: #28a745;
+    }
+
+    .crud-actions .delete-btn {
+      background-color: #dc3545;
+    }
+
+    /* Sección Vista Menú */
+    #menuSection {
+      /* Aquí no hay estilos directos */
+    }
+
+    .export-button {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+    }
+
+    .export-button:hover {
+      background-color: #218838;
+    }
+
+    /* Contenedor que se exportará como imagen */
+    #menuExportArea {
+      max-width: 900px;
+      margin: 0 auto; /* Centra el contenedor */
+      padding: 40px;
+      background-color: #fff;
+      border-radius: 8px;
+      position: relative;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Título grande para el menú */
+    #menuExportArea h1 {
+      font-family: 'Georgia', serif;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* Subtítulo (opcional) */
+    #menuExportArea .subtitle {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    /* Logo en la sección de menú */
+    #menuExportArea img {
+      width: 100px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    /* Info restaurante */
+    .restaurant-info {
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    /* Contenedor de categorías en la Vista Menu */
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .category-block {
+      text-align: left;
+    }
+
+    .category-block h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .menu-item span {
+      font-size: 0.95rem;
+    }
+
+    .menu-item .price {
+      font-weight: bold;
+    }
+
+    /* Footer (ej. horario) */
+    .menu-footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de navegación para cambiar entre CRUD y Vista de Menú -->
+  <nav>
+    <button id="crudBtn">CRUD</button>
+    <button id="menuBtn">Vista Menú</button>
+  </nav>
+
+  <!-- Sección CRUD -->
+  <section id="crudSection">
+    <h2>Administrar Menú (CRUD)</h2>
+    <div class="crud-form">
+      <input type="text" id="categoryInput" placeholder="Categoría (ej. 'Desayuno')" />
+      <input type="text" id="nameInput" placeholder="Nombre del plato" />
+      <input type="text" id="priceInput" placeholder="Precio (RD$)" />
+      <button id="addBtn">Agregar</button>
+    </div>
+
+    <table class="crud-table" id="crudTable">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Plato</th>
+          <th>Precio (RD$)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Se llena dinámicamente -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Sección Vista Menú -->
+  <section id="menuSection">
+    <!-- Botón para exportar la sección como imagen -->
+    <button class="export-button" id="exportBtn">Exportar como Imagen</button>
+
+    <!-- Contenedor que se exportará a imagen (incluye logo e info) -->
+    <div id="menuExportArea">
+      <!-- LOGO (opcional) -->
+      <img src="./img/logo.png" alt="Logo Restaurante" />
+
+      <!-- Título y subtítulo del menú -->
+      <h1>RESTO CAFE</h1>
+      <div class="subtitle">Deliciosos platillos para cada momento</div>
+
+      <!-- INFO RESTAURANTE -->
+      <div class="restaurant-info">
+        <p>GUSTAVO MEJIA RICART #220 ENS QUISQUEYA</p>
+        <p>RNC: 132-101618</p>
+        <p>TEL: 809-472-7278</p>
+      </div>
+
+      <!-- Aquí se mostrará el menú agrupado por categoría -->
+      <div class="menu-container" id="menuContainer">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <!-- Footer con horario (ejemplo) -->
+      <div class="menu-footer">
+        OPEN DAILY 10 AM - 10 PM
+      </div>
+    </div>
+  </section>
+
+  <!-- Librería para exportar a imagen (html2canvas) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- Script Principal -->
+  <script>
+    // Datos iniciales (podrías cargarlos desde un JSON, BD, etc.)
+    let menuData = [
+      {
+        id: 1,
+        category: "Espresso",
+        name: "Americano",
+        price: 4.00
+      },
+      {
+        id: 2,
+        category: "Espresso",
+        name: "Cappuccino",
+        price: 4.00
+      },
+      {
+        id: 3,
+        category: "Espresso",
+        name: "Latte",
+        price: 4.00
+      },
+      {
+        id: 4,
+        category: "Non-Coffee",
+        name: "Caramel",
+        price: 4.00
+      },
+      {
+        id: 5,
+        category: "Non-Coffee",
+        name: "Hazelnut Mocha",
+        price: 4.00
+      },
+      {
+        id: 6,
+        category: "Tea",
+        name: "Hot Tea",
+        price: 4.00
+      },
+      {
+        id: 7,
+        category: "Tea",
+        name: "Green Tea",
+        price: 4.00
+      },
+      {
+        id: 8,
+        category: "Desserts",
+        name: "Strawberry Brownie",
+        price: 5.00
+      }
+    ];
+
+    let editingId = null;
+
+    // Referencias a elementos del DOM
+    const crudSection = document.getElementById("crudSection");
+    const menuSection = document.getElementById("menuSection");
+
+    const crudBtn = document.getElementById("crudBtn");
+    const menuBtn = document.getElementById("menuBtn");
+
+    const categoryInput = document.getElementById("categoryInput");
+    const nameInput = document.getElementById("nameInput");
+    const priceInput = document.getElementById("priceInput");
+    const addBtn = document.getElementById("addBtn");
+
+    const crudTableBody = document.querySelector("#crudTable tbody");
+    const menuContainer = document.getElementById("menuContainer");
+
+    const exportBtn = document.getElementById("exportBtn");
+    const menuExportArea = document.getElementById("menuExportArea");
+
+    // Navegación entre secciones
+    crudBtn.addEventListener("click", () => {
+      crudSection.classList.add("active");
+      menuSection.classList.remove("active");
+      renderTable();
+    });
+
+    menuBtn.addEventListener("click", () => {
+      menuSection.classList.add("active");
+      crudSection.classList.remove("active");
+      renderMenuView();
+    });
+
+    // Mostrar inicialmente la sección CRUD
+    crudSection.classList.add("active");
+
+    // Función para renderizar la tabla CRUD
+    function renderTable() {
+      crudTableBody.innerHTML = "";
+      menuData.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const tdCategory = document.createElement("td");
+        tdCategory.textContent = item.category;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = item.name;
+
+        const tdPrice = document.createElement("td");
+        tdPrice.textContent = item.price.toFixed(2);
+
+        const tdActions = document.createElement("td");
+        tdActions.classList.add("crud-actions");
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Editar";
+        editBtn.classList.add("edit-btn");
+        editBtn.addEventListener("click", () => {
+          editingId = item.id;
+          categoryInput.value = item.category;
+          nameInput.value = item.name;
+          priceInput.value = item.price;
+        });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Borrar";
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.addEventListener("click", () => {
+          menuData = menuData.filter(m => m.id !== item.id);
+          renderTable();
+        });
+
+        tdActions.appendChild(editBtn);
+        tdActions.appendChild(deleteBtn);
+
+        tr.appendChild(tdCategory);
+        tr.appendChild(tdName);
+        tr.appendChild(tdPrice);
+        tr.appendChild(tdActions);
+
+        crudTableBody.appendChild(tr);
+      });
+    }
+
+    // Función para renderizar la vista del menú
+    function renderMenuView() {
+      menuContainer.innerHTML = "";
+
+      // Agrupamos por categoría
+      const categories = {};
+      menuData.forEach(item => {
+        if (!categories[item.category]) {
+          categories[item.category] = [];
+        }
+        categories[item.category].push(item);
+      });
+
+      // Creamos bloques por cada categoría
+      Object.keys(categories).forEach(cat => {
+        const catBlock = document.createElement("div");
+        catBlock.classList.add("category-block");
+
+        const catTitle = document.createElement("h3");
+        catTitle.textContent = cat;
+        catBlock.appendChild(catTitle);
+
+        categories[cat].forEach(item => {
+          const itemDiv = document.createElement("div");
+          itemDiv.classList.add("menu-item");
+          itemDiv.innerHTML = `
+            <span>${item.name}</span>
+            <span class="price">RD$ ${item.price.toFixed(2)}</span>
+          `;
+          catBlock.appendChild(itemDiv);
+        });
+
+        menuContainer.appendChild(catBlock);
+      });
+    }
+
+    // Función para agregar/editar un plato
+    addBtn.addEventListener("click", () => {
+      const categoryVal = categoryInput.value.trim();
+      const nameVal = nameInput.value.trim();
+      const priceVal = parseFloat(priceInput.value);
+
+      if (!categoryVal || !nameVal || isNaN(priceVal)) {
+        alert("Por favor completa todos los campos correctamente.");
+        return;
+      }
+
+      if (editingId) {
+        // Editar
+        menuData = menuData.map(item => {
+          if (item.id === editingId) {
+            return {
+              ...item,
+              category: categoryVal,
+              name: nameVal,
+              price: priceVal
+            };
+          }
+          return item;
+        });
+        editingId = null;
+      } else {
+        // Agregar
+        const newItem = {
+          id: Date.now(),
+          category: categoryVal,
+          name: nameVal,
+          price: priceVal
+        };
+        menuData.push(newItem);
+      }
+
+      // Limpiar campos
+      categoryInput.value = "";
+      nameInput.value = "";
+      priceInput.value = "";
+
+      renderTable();
+    });
+
+    // Botón para exportar la vista del menú como imagen
+    exportBtn.addEventListener("click", () => {
+      html2canvas(menuExportArea).then(canvas => {
+        // Descargar la imagen
+        const link = document.createElement("a");
+        link.download = "menu.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    });
+
+    // Render inicial de la tabla CRUD
+    renderTable();
+  </script>
+</body>
+</html>
